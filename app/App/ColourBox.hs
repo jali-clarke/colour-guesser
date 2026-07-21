@@ -11,8 +11,9 @@ import Colour (Colour)
 import Control.Monad (void)
 import qualified Graphics.UI.Threepenny as UI
 import Graphics.UI.Threepenny.Core hiding (element)
+import Prelude hiding (span)
 
-newtype ColourBox = ColourBox {_element :: Element}
+data ColourBox = ColourBox {_element :: Element, _span :: Element}
 
 element :: ColourBox -> Element
 element = _element
@@ -25,20 +26,24 @@ new = do
         UI.style
         [ ("height", "100px"),
           ("width", "100px"),
-          ("color", "white"), -- text colour
-          ("mix-blend-mode", "difference"), -- display text as negative colour
           ("padding", "1px"),
           ("border", "1px solid black")
         ]
-  pure $ ColourBox box
+  span <-
+    UI.span
+      # set
+        UI.style
+        [ ("color", "black"),
+          ("background-color", "#dcdcdc88")
+        ]
+  void $ pure box #+ [UI.element span]
+  pure $ ColourBox box span
 
 setColour :: Colour -> ColourBox -> UI ()
-setColour colour (ColourBox box) =
-  void $
-    pure box
-      # set UI.style [("background-color", show colour)]
-      # set UI.text (show colour)
+setColour colour (ColourBox box span) = do
+  void $ pure box # set UI.style [("background-color", show colour)]
+  void $ pure span # set UI.text (show colour)
 
 setSelected :: Bool -> ColourBox -> UI ()
-setSelected isSelected (ColourBox box) =
+setSelected isSelected (ColourBox box _) =
   void $ pure box # set UI.style [("border", if isSelected then "1px solid red" else "1px solid black")]
