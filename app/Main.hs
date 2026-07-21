@@ -30,7 +30,8 @@ main = do
 
   App.app $
     App.AppConfig
-      { App.maxSelectedColours = CLI.maxSelectedColours opts,
+      { App.listenPort = CLI.listenPort opts,
+        App.maxSelectedColours = CLI.maxSelectedColours opts,
         App.initialColours = do
           initialPopulation' <- SimulationManager.initialPopulation manager
           pure (Vector.take numCandidateColoursDisplay initialPopulation'),

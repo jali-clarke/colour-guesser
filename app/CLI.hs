@@ -13,7 +13,8 @@ import Options.Applicative
 
 data Opts
   = Opts
-  { maxSelectedColours :: Int,
+  { listenPort :: Int,
+    maxSelectedColours :: Int,
     numCandidateColoursDisplay :: Int,
     mkGeneticOpts :: (Colour -> IO Positive) -> Genetic.GeneticOpts IO Colour
   }
@@ -23,6 +24,8 @@ getOpts = execParser (info (parser <**> helper) mempty)
 
 parser :: Parser Opts
 parser = do
+  listenPort' <-
+    option auto (showDefault <> value 8080 <> long "port" <> short 'p' <> help "port on which to serve the threepenny-gui")
   maxSelectedColours' <-
     option auto (showDefault <> value 3 <> long "max-selected-colours" <> short 'm' <> help "number of colours able to be selected before next generation runs")
   numCandidateColoursDisplay' <-
@@ -40,7 +43,8 @@ parser = do
 
   pure $
     Opts
-      { maxSelectedColours = maxSelectedColours',
+      { listenPort = listenPort',
+        maxSelectedColours = maxSelectedColours',
         numCandidateColoursDisplay = numCandidateColoursDisplay',
         mkGeneticOpts = \fitness' ->
           Genetic.GeneticOpts

@@ -15,7 +15,8 @@ import Graphics.UI.Threepenny.Core
 
 data AppConfig
   = AppConfig
-  { maxSelectedColours :: Int,
+  { listenPort :: Int,
+    maxSelectedColours :: Int,
     initialColours :: IO (Vector.Vector Colour),
     reportUserColours :: UserChoice -> IO (),
     newCandidateColours :: IO (Vector.Vector Colour),
@@ -27,7 +28,7 @@ data UserChoice
   | UserDislikes [Colour]
 
 app :: AppConfig -> IO ()
-app appConfig = startGUI (defaultConfig {jsPort = Just 8080}) (setup appConfig)
+app appConfig = startGUI (defaultConfig {jsPort = Just $ listenPort appConfig}) (setup appConfig)
 
 setup :: AppConfig -> Window -> UI ()
 setup appConfig window = do

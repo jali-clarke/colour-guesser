@@ -18,4 +18,4 @@ or clone locally then:
 
 clone locally then:
 
-`hpack && cabal run [-- --help]`
+`hpack && cabal run colour-guesser [-- --help]`
