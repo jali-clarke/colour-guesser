@@ -53,8 +53,7 @@ setup appConfig window = do
             newColours <- newCandidateColours appConfig
             State.setColours newColours state
             pure $ Just newColours
-          else do
-            pure Nothing
+          else pure Nothing
 
       case maybeNewColours of
         Nothing -> do
@@ -62,7 +61,6 @@ setup appConfig window = do
           box # ColourBox.setSelected isSelected
         Just newColours -> do
           updateCandidateColours candidateBoxes newColours
-          forM_ candidateBoxes $ ColourBox.setSelected False
 
   resetButton <- UI.button
   _ <- pure resetButton # set UI.text "reset"
@@ -77,14 +75,15 @@ setup appConfig window = do
         pure newInitialColours
 
     updateCandidateColours candidateBoxes newInitialColours
-    forM_ candidateBoxes $ ColourBox.setSelected False
 
   let layout = grid . chunkList ((numInitialColours + 3) `div` 4) $ fmap (element . ColourBox.element) candidateBoxes
   void $ getBody window #+ [layout, element resetButton]
 
 updateCandidateColours :: [ColourBox.ColourBox] -> Vector.Vector Colour -> UI ()
-updateCandidateColours boxes colours =
-  forM_ (zip boxes (Vector.toList colours)) $ \(box, colour) -> void $ box # ColourBox.setColour colour
+updateCandidateColours boxes colours = do
+  forM_ (zip boxes (Vector.toList colours)) $ \(box, colour) -> do
+    void $ box # ColourBox.setColour colour
+    box # ColourBox.setSelected False
 
 chunkList :: Int -> [a] -> [[a]]
 chunkList chunkSize xs =
