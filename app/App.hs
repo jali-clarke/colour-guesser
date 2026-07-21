@@ -1,5 +1,6 @@
 module App
   ( AppConfig (..),
+    UserChoice (..),
     app,
   )
 where
@@ -16,10 +17,14 @@ data AppConfig
   = AppConfig
   { maxSelectedColours :: Int,
     initialColours :: IO (Vector.Vector Colour),
-    reportUserColours :: [Colour] -> IO (),
+    reportUserColours :: UserChoice -> IO (),
     newCandidateColours :: IO (Vector.Vector Colour),
     resetSimulation :: IO ()
   }
+
+data UserChoice
+  = UserChose [Colour]
+  | UserDislikes [Colour]
 
 app :: AppConfig -> IO ()
 app appConfig = startGUI (defaultConfig {jsPort = Just 8080}) (setup appConfig)
@@ -48,7 +53,7 @@ setup appConfig window = do
         if numSelected >= maxSelectedColours appConfig
           then do
             selectedColours <- State.selectedColours state
-            reportUserColours appConfig selectedColours
+            reportUserColours appConfig (UserChose selectedColours)
             State.resetSelected state
             newColours <- newCandidateColours appConfig
             State.setColours newColours state
@@ -62,8 +67,7 @@ setup appConfig window = do
         Just newColours -> do
           updateCandidateColours candidateBoxes newColours
 
-  resetButton <- UI.button
-  _ <- pure resetButton # set UI.text "reset"
+  resetButton <- UI.button # set UI.text "reset"
 
   on UI.click resetButton $ \_ -> do
     newInitialColours <-
@@ -76,8 +80,21 @@ setup appConfig window = do
 
     updateCandidateColours candidateBoxes newInitialColours
 
+  rejectAllButton <- UI.button # set UI.text "i don't like any of these"
+
+  on UI.click rejectAllButton $ \_ -> do
+    newColours <- liftIO $ do
+      rejectedColours <- State.allColours state
+      reportUserColours appConfig (UserDislikes $ Vector.toList rejectedColours)
+      State.resetSelected state
+      newColours <- newCandidateColours appConfig
+      State.setColours newColours state
+      pure newColours
+
+    updateCandidateColours candidateBoxes newColours
+
   let layout = grid . chunkList ((numInitialColours + 3) `div` 4) $ fmap (element . ColourBox.element) candidateBoxes
-  void $ getBody window #+ [layout, element resetButton]
+  void $ getBody window #+ [layout, element rejectAllButton, element resetButton]
 
 updateCandidateColours :: [ColourBox.ColourBox] -> Vector.Vector Colour -> UI ()
 updateCandidateColours boxes colours = do

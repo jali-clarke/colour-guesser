@@ -2,6 +2,7 @@ module App.State
   ( State,
     newState,
     setColours,
+    allColours,
     toggleSelected,
     isSelected,
     resetSelected,
@@ -28,6 +29,9 @@ newState colours' = State <$> IORef.newIORef (State_ colours' Set.empty)
 
 setColours :: Vector.Vector Colour -> State -> IO ()
 setColours newColours (State ref) = IORef.modifyIORef ref $ \state -> state {colours = newColours}
+
+allColours :: State -> IO (Vector.Vector Colour)
+allColours (State ref) = colours <$> IORef.readIORef ref
 
 toggleSelected :: Int -> State -> IO ()
 toggleSelected boxIdx stateRef@(State ref) = do

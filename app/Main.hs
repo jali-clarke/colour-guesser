@@ -15,12 +15,14 @@ main = do
   opts <- CLI.getOpts
 
   candidateColoursMVar <- MVar.newEmptyMVar
-  userListMVar <- MVarN.newEmptyMVarN
+  userChoiceMVar <- MVarN.newEmptyMVarN
 
   let geneticOpts =
         CLI.mkGeneticOpts opts $ \candidate -> do
-          selectedColours <- MVarN.takeMVarN userListMVar 1
-          pure $ 1 / ((sum $ fmap (diffColourSq candidate) selectedColours) + 0.1)
+          userChoice <- MVarN.takeMVarN userChoiceMVar 1
+          case userChoice of
+            App.UserChose selectedColours -> pure $ 1 / ((sum $ fmap (diffColourSq candidate) selectedColours) + 0.1)
+            App.UserDislikes dislikedColours -> pure $ sum (fmap (diffColourSq candidate) dislikedColours)
 
   let numCandidateColoursDisplay = CLI.numCandidateColoursDisplay opts
 
@@ -32,7 +34,7 @@ main = do
         App.initialColours = do
           initialPopulation' <- SimulationManager.initialPopulation manager
           pure (Vector.take numCandidateColoursDisplay initialPopulation'),
-        App.reportUserColours = MVarN.putMVarN userListMVar (Genetic.populationSize geneticOpts),
+        App.reportUserColours = MVarN.putMVarN userChoiceMVar (Genetic.populationSize geneticOpts),
         App.newCandidateColours = MVar.takeMVar candidateColoursMVar,
         App.resetSimulation = SimulationManager.restartSimulation manager
       }
