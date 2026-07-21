@@ -17,7 +17,8 @@ data AppConfig
   { maxSelectedColours :: Int,
     initialColours :: IO (Vector.Vector Colour),
     reportUserColours :: [Colour] -> IO (),
-    newCandidateColours :: IO (Vector.Vector Colour)
+    newCandidateColours :: IO (Vector.Vector Colour),
+    resetSimulation :: IO ()
   }
 
 app :: AppConfig -> IO ()
@@ -67,8 +68,14 @@ setup appConfig window = do
   _ <- pure resetButton # set UI.text "reset"
 
   on UI.click resetButton $ \_ -> do
-    newInitialColours <- liftIO $ initialColours appConfig
-    liftIO $ State.resetSelected state
+    newInitialColours <-
+      liftIO $ do
+        resetSimulation appConfig
+        newInitialColours <- initialColours appConfig
+        State.setColours newInitialColours state
+        State.resetSelected state
+        pure newInitialColours
+
     updateCandidateColours candidateBoxes newInitialColours
     forM_ candidateBoxes $ ColourBox.setSelected False
 

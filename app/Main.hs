@@ -33,7 +33,8 @@ main = do
           initialPopulation' <- SimulationManager.initialPopulation manager
           pure (Vector.take numCandidateColoursDisplay initialPopulation'),
         App.reportUserColours = MVarN.putMVarN userListMVar (Genetic.populationSize geneticOpts),
-        App.newCandidateColours = MVar.takeMVar candidateColoursMVar
+        App.newCandidateColours = MVar.takeMVar candidateColoursMVar,
+        App.resetSimulation = SimulationManager.restartSimulation manager
       }
 
 diffColourSq :: Colour -> Colour -> Positive
