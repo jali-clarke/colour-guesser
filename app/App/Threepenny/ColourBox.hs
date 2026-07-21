@@ -1,4 +1,4 @@
-module App.ColourBox
+module App.Threepenny.ColourBox
   ( ColourBox,
     new,
     element,

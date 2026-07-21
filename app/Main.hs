@@ -1,6 +1,6 @@
 module Main where
 
-import qualified App
+import qualified App.Threepenny as App
 import qualified CLI
 import Colour (Colour (..))
 import qualified Control.Concurrent.MVar as MVar
