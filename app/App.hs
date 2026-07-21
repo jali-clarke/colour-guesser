@@ -27,6 +27,9 @@ setup :: AppConfig -> Window -> UI ()
 setup appConfig window = do
   _ <- pure window # set title "colour guesser"
 
+  body <- getBody window
+  _ <- pure body # set UI.style [("background-color", "black")]
+
   let initialColours' = initialColours appConfig
       numInitialColours = Vector.length initialColours'
 
