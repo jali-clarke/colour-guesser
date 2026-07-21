@@ -30,7 +30,7 @@ main = do
   App.app $
     App.AppConfig
       { App.maxSelectedColours = CLI.maxSelectedColours opts,
-        App.initialColours = Vector.take numCandidateColoursDisplay initialPopulation,
+        App.initialColours = pure (Vector.take numCandidateColoursDisplay initialPopulation),
         App.reportUserColours = MVarN.putMVarN userListMVar (Genetic.populationSize geneticOpts),
         App.newCandidateColours = MVar.takeMVar candidateColoursMVar
       }

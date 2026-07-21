@@ -15,7 +15,7 @@ import Graphics.UI.Threepenny.Core
 data AppConfig
   = AppConfig
   { maxSelectedColours :: Int,
-    initialColours :: Vector.Vector Colour,
+    initialColours :: IO (Vector.Vector Colour),
     reportUserColours :: [Colour] -> IO (),
     newCandidateColours :: IO (Vector.Vector Colour)
   }
@@ -30,8 +30,8 @@ setup appConfig window = do
   body <- getBody window
   _ <- pure body # set UI.style [("background-color", "black")]
 
-  let initialColours' = initialColours appConfig
-      numInitialColours = Vector.length initialColours'
+  initialColours' <- liftIO $ initialColours appConfig
+  let numInitialColours = Vector.length initialColours'
 
   state <- liftIO $ State.newState initialColours'
 
@@ -63,8 +63,17 @@ setup appConfig window = do
           updateCandidateColours candidateBoxes newColours
           forM_ candidateBoxes $ ColourBox.setSelected False
 
+  resetButton <- UI.button
+  _ <- pure resetButton # set UI.text "reset"
+
+  on UI.click resetButton $ \_ -> do
+    newInitialColours <- liftIO $ initialColours appConfig
+    liftIO $ State.resetSelected state
+    updateCandidateColours candidateBoxes newInitialColours
+    forM_ candidateBoxes $ ColourBox.setSelected False
+
   let layout = grid . chunkList ((numInitialColours + 3) `div` 4) $ fmap (element . ColourBox.element) candidateBoxes
-  void $ getBody window #+ [layout]
+  void $ getBody window #+ [layout, element resetButton]
 
 updateCandidateColours :: [ColourBox.ColourBox] -> Vector.Vector Colour -> UI ()
 updateCandidateColours boxes colours =
