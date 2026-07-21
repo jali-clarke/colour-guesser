@@ -3,12 +3,12 @@ module Main where
 import qualified App
 import qualified CLI
 import Colour (Colour (..))
-import Control.Concurrent (forkIO)
 import qualified Control.Concurrent.MVar as MVar
 import qualified Data.Vector as Vector
 import qualified Genetic
 import Genetic.Positive (Positive, abs', square)
 import qualified MVarN
+import qualified SimulationManager
 
 main :: IO ()
 main = do
@@ -22,15 +22,16 @@ main = do
           selectedColours <- MVarN.takeMVarN userListMVar 1
           pure $ 1 / ((sum $ fmap (diffColourSq candidate) selectedColours) + 0.1)
 
-  initialPopulation <- Genetic.newPopulation geneticOpts
   let numCandidateColoursDisplay = CLI.numCandidateColoursDisplay opts
 
-  _ <- forkIO $ Genetic.simulate geneticOpts initialPopulation (simulateCallback numCandidateColoursDisplay candidateColoursMVar)
+  manager <- SimulationManager.startSimulation geneticOpts (simulateCallback numCandidateColoursDisplay candidateColoursMVar)
 
   App.app $
     App.AppConfig
       { App.maxSelectedColours = CLI.maxSelectedColours opts,
-        App.initialColours = pure (Vector.take numCandidateColoursDisplay initialPopulation),
+        App.initialColours = do
+          initialPopulation' <- SimulationManager.initialPopulation manager
+          pure (Vector.take numCandidateColoursDisplay initialPopulation'),
         App.reportUserColours = MVarN.putMVarN userListMVar (Genetic.populationSize geneticOpts),
         App.newCandidateColours = MVar.takeMVar candidateColoursMVar
       }
