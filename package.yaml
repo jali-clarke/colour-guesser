@@ -17,6 +17,8 @@ executable:
   dependencies:
     - containers
     - colour-guesser
+    - gi-gtk4
+    - haskell-gi-base
     - optparse-applicative
     - threepenny-gui
 tests:

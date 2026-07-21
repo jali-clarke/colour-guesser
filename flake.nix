@@ -22,13 +22,13 @@
       ];
 
       eachSystem =
-        f: inputs.nixpkgs.lib.genAttrs systems (system: f inputs.nixpkgs.legacyPackages.${system});
+        f: inputs.nixpkgs.lib.genAttrs systems (system: f system inputs.nixpkgs.legacyPackages.${system});
 
       mkHaskell = pkgs: pkgs.haskell.packages.ghc984.extend inputs.genetic.overlays.haskell;
     in
     {
       formatter = eachSystem (
-        pkgs:
+        _: pkgs:
         (inputs.treefmt-nix.lib.evalModule pkgs {
           projectRootFile = "flake.nix";
 
@@ -38,46 +38,38 @@
         }).config.build.wrapper
       );
 
-      packages = eachSystem (pkgs: {
-        default = (mkHaskell pkgs).callCabal2nix "colour-guesser" (pkgs.lib.fileset.toSource {
-          root = ./.;
-          fileset = pkgs.lib.fileset.unions [
-            ./app
-            ./src
-            ./test
-            ./package.yaml
-          ];
-        }) { };
-      });
-
-      devShells = eachSystem (pkgs: {
-        default = pkgs.mkShell {
-          name = "haskell";
-
-          packages =
-            let
-              ghc = (mkHaskell pkgs).ghcWithPackages (p: [
-                p.hspec
-                p.hspec-expectations
-                p.genetic
-                p.MonadRandom
-                p.optparse-applicative
-                p.QuickCheck
-                p.threepenny-gui
-                p.vector
-              ]);
-
-              cabal-install = pkgs.writeShellScriptBin "cabal" ''
-                ${pkgs.hpack}/bin/hpack --silent
-                exec ${pkgs.cabal-install}/bin/cabal --active-repositories=:none "$@"
-              '';
-            in
-            [
-              cabal-install
-              ghc
-              pkgs.hpack
+      packages = eachSystem (
+        _: pkgs: {
+          default = (mkHaskell pkgs).callCabal2nix "colour-guesser" (pkgs.lib.fileset.toSource {
+            root = ./.;
+            fileset = pkgs.lib.fileset.unions [
+              ./app
+              ./src
+              ./test
+              ./package.yaml
             ];
-        };
-      });
+          }) { };
+        }
+      );
+
+      devShells = eachSystem (
+        system: pkgs: {
+          default = (mkHaskell pkgs).shellFor {
+            packages = _: [ self.packages.${system}.default ];
+
+            nativeBuildInputs =
+              let
+                cabal-install = pkgs.writeShellScriptBin "cabal" ''
+                  ${pkgs.hpack}/bin/hpack --silent
+                  exec ${pkgs.cabal-install}/bin/cabal --active-repositories=:none "$@"
+                '';
+              in
+              [
+                cabal-install
+                pkgs.hpack
+              ];
+          };
+        }
+      );
     };
 }
