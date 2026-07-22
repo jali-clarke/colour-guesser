@@ -39,13 +39,13 @@ activateGtkApp appConfig gtkApp = do
   mkColourBox <- ColourBox.initColourBoxConstructor display
 
   initialColours' <- initialColours appConfig
-  colourBoxes <- 
+  colourBoxes <-
     forM [0 .. Vector.length initialColours' - 1] $ \boxIdx -> do
       colourBox <- mkColourBox boxIdx
       let (colIdx, rowIdx) = fromIntegral boxIdx `divMod` numBoxesRows
       Gtk.gridAttach grid (ColourBox.asWidget colourBox) colIdx rowIdx 1 1
       pure colourBox
-  
+
   updateCandidateColours colourBoxes initialColours'
 
   resetButton <- Gtk.buttonNewWithLabel "reset"
