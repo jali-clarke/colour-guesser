@@ -48,6 +48,6 @@ activateGtkApp appConfig gtkApp = do
 
 app :: AppConfig -> IO ()
 app appConfig = do
-  gtkApp <- Gtk.applicationNew (Just "colour-guesser") []
+  gtkApp <- Gtk.applicationNew Nothing []
   void $ Gio.onApplicationActivate gtkApp (activateGtkApp appConfig gtkApp)
   void $ Gio.applicationRun gtkApp Nothing
