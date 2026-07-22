@@ -25,12 +25,11 @@ data ColourBox
   { _box :: Gtk.Box,
     _label :: Gtk.Label,
     _boxIdx :: Int,
-    _gestureClick :: Gtk.GestureClick,
     _boxCssProvider :: Gtk.CssProvider
   }
 
 asWidget :: ColourBox -> Gtk.Box
-asWidget (ColourBox box _ _ _ _) = box
+asWidget (ColourBox box _ _ _) = box
 
 sideLength :: GHC.Int.Int32
 sideLength = 100
@@ -61,18 +60,15 @@ newColourBox display boxIdx = do
     boxCssProvider
     (fromIntegral Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
-  gestureClick <- Gtk.gestureClickNew
-  Gtk.widgetAddController box gestureClick
-
   label <- Gtk.labelNew Nothing
   Gtk.widgetAddCssClass label Css.boxLabelClass
 
   Gtk.boxPrepend box label
 
-  pure $ ColourBox box label boxIdx gestureClick boxCssProvider
+  pure $ ColourBox box label boxIdx boxCssProvider
 
 setColour :: ColourBox -> Colour -> IO ()
-setColour (ColourBox _ label boxIdx _ boxCssProvider) colour = do
+setColour (ColourBox _ label boxIdx boxCssProvider) colour = do
   Gtk.cssProviderLoadFromString
     boxCssProvider
     (toText $ Css.boxColourCss boxIdx colour)
@@ -80,11 +76,13 @@ setColour (ColourBox _ label boxIdx _ boxCssProvider) colour = do
   Gtk.labelSetText label $ Text.pack (show colour)
 
 setSelected :: ColourBox -> Bool -> IO ()
-setSelected (ColourBox box _ _ _ _) isSelected =
+setSelected (ColourBox box _ _ _) isSelected =
   if isSelected
     then Gtk.widgetAddCssClass box Css.selectedBoxClass
     else Gtk.widgetRemoveCssClass box Css.selectedBoxClass
 
 setOnClickCallback :: ColourBox -> IO () -> IO ()
-setOnClickCallback (ColourBox _ _ _ gestureClick _) callback =
+setOnClickCallback (ColourBox box _ _ _) callback = do
+  gestureClick <- Gtk.gestureClickNew
   void $ Gtk.onGestureClickReleased gestureClick (\_ _ _ -> callback)
+  Gtk.widgetAddController box gestureClick
