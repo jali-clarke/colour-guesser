@@ -9,11 +9,13 @@ where
 import App.AppConfig (AppConfig (..))
 import qualified App.GiGtk.ColourBox as ColourBox
 import qualified App.GiGtk.Css as Css
+import qualified App.State as State
 import Colour (Colour)
 import Control.Monad (forM, forM_, void)
 import qualified Data.Vector as Vector
 import qualified GI.Gio as Gio
 import qualified GI.Gtk as Gtk
+import UserChoice (UserChoice (..))
 
 activateGtkApp :: AppConfig -> Gtk.Application -> IO ()
 activateGtkApp appConfig gtkApp = do
@@ -39,14 +41,16 @@ activateGtkApp appConfig gtkApp = do
   mkColourBox <- ColourBox.initColourBoxConstructor display
 
   initialColours' <- initialColours appConfig
-  colourBoxes <-
+  state <- State.newState initialColours'
+
+  candidateBoxes <-
     forM [0 .. Vector.length initialColours' - 1] $ \boxIdx -> do
       colourBox <- mkColourBox boxIdx
       let (colIdx, rowIdx) = fromIntegral boxIdx `divMod` numBoxesRows
       Gtk.gridAttach grid (ColourBox.asWidget colourBox) colIdx rowIdx 1 1
       pure colourBox
 
-  updateCandidateColours colourBoxes initialColours'
+  updateCandidateColours candidateBoxes initialColours'
 
   resetButton <- Gtk.buttonNewWithLabel "reset"
   Gtk.gridAttach grid resetButton 0 (numBoxesRows + 1) 1 1
@@ -54,10 +58,20 @@ activateGtkApp appConfig gtkApp = do
   void . Gtk.onButtonClicked resetButton $ do
     resetSimulation appConfig
     newInitialColours <- initialColours appConfig
-    updateCandidateColours colourBoxes newInitialColours
+    State.setColours state newInitialColours
+    State.resetSelected state
+    updateCandidateColours candidateBoxes newInitialColours
 
   rejectAllButton <- Gtk.buttonNewWithLabel "i don't like any of these"
   Gtk.gridAttach grid rejectAllButton 1 (numBoxesRows + 1) 2 1
+
+  void . Gtk.onButtonClicked rejectAllButton $ do
+    rejectedColours <- State.allColours state
+    reportUserColours appConfig (UserDislikes $ Vector.toList rejectedColours)
+    State.resetSelected state
+    newColours <- newCandidateColours appConfig
+    State.setColours state newColours
+    updateCandidateColours candidateBoxes newColours
 
   Gtk.windowPresent window
 
