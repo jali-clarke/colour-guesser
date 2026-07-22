@@ -15,11 +15,14 @@ executable:
   main: Main.hs
   source-dirs: app
   dependencies:
+    - clay
     - containers
     - colour-guesser
+    - gi-gdk4
     - gi-gtk4
     - haskell-gi-base
     - optparse-applicative
+    - text
     - threepenny-gui
 tests:
   spec:
