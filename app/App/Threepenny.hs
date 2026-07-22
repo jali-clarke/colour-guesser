@@ -5,8 +5,8 @@ module App.Threepenny
   )
 where
 
+import qualified App.State as State
 import qualified App.Threepenny.ColourBox as ColourBox
-import qualified App.Threepenny.State as State
 import Colour (Colour)
 import Control.Monad (forM_, replicateM, void)
 import qualified Data.Vector as Vector

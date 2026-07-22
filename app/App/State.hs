@@ -1,4 +1,4 @@
-module App.Threepenny.State
+module App.State
   ( State,
     newState,
     setColours,
