@@ -7,12 +7,14 @@ module App.GiGtk.ColourBox
     initColourBoxConstructor,
     setColour,
     setSelected,
+    setOnClickCallback,
   )
 where
 
 import qualified App.GiGtk.ColourBox.Css as Css
 import App.GiGtk.Css (toText)
 import Colour (Colour)
+import Control.Monad (void)
 import qualified Data.Text as Text
 import qualified GHC.Int
 import qualified GI.Gdk as Gdk
@@ -23,11 +25,12 @@ data ColourBox
   { _box :: Gtk.Box,
     _label :: Gtk.Label,
     _boxIdx :: Int,
+    _gestureClick :: Gtk.GestureClick,
     _boxCssProvider :: Gtk.CssProvider
   }
 
 asWidget :: ColourBox -> Gtk.Box
-asWidget (ColourBox box _ _ _) = box
+asWidget (ColourBox box _ _ _ _) = box
 
 sideLength :: GHC.Int.Int32
 sideLength = 100
@@ -58,15 +61,18 @@ newColourBox display boxIdx = do
     boxCssProvider
     (fromIntegral Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
+  gestureClick <- Gtk.gestureClickNew
+  Gtk.widgetAddController box gestureClick
+
   label <- Gtk.labelNew Nothing
   Gtk.widgetAddCssClass label Css.boxLabelClass
 
   Gtk.boxPrepend box label
 
-  pure $ ColourBox box label boxIdx boxCssProvider
+  pure $ ColourBox box label boxIdx gestureClick boxCssProvider
 
 setColour :: ColourBox -> Colour -> IO ()
-setColour (ColourBox _ label boxIdx boxCssProvider) colour = do
+setColour (ColourBox _ label boxIdx _ boxCssProvider) colour = do
   Gtk.cssProviderLoadFromString
     boxCssProvider
     (toText $ Css.boxColourCss boxIdx colour)
@@ -74,7 +80,11 @@ setColour (ColourBox _ label boxIdx boxCssProvider) colour = do
   Gtk.labelSetText label $ Text.pack (show colour)
 
 setSelected :: ColourBox -> Bool -> IO ()
-setSelected (ColourBox box _ _ _) isSelected =
+setSelected (ColourBox box _ _ _ _) isSelected =
   if isSelected
     then Gtk.widgetAddCssClass box Css.selectedBoxClass
     else Gtk.widgetRemoveCssClass box Css.selectedBoxClass
+
+setOnClickCallback :: ColourBox -> IO () -> IO ()
+setOnClickCallback (ColourBox _ _ _ gestureClick _) callback =
+  void $ Gtk.onGestureClickReleased gestureClick (\_ _ _ -> callback)

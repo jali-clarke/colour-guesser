@@ -44,11 +44,28 @@ activateGtkApp appConfig gtkApp = do
   state <- State.newState initialColours'
 
   candidateBoxes <-
-    forM [0 .. Vector.length initialColours' - 1] $ \boxIdx -> do
-      colourBox <- mkColourBox boxIdx
-      let (colIdx, rowIdx) = fromIntegral boxIdx `divMod` numBoxesRows
+    forM [0 .. Vector.length initialColours' - 1] $ \idx -> do
+      colourBox <- mkColourBox idx
+      let (colIdx, rowIdx) = fromIntegral idx `divMod` numBoxesRows
       Gtk.gridAttach grid (ColourBox.asWidget colourBox) colIdx rowIdx 1 1
       pure colourBox
+
+  forM_ (zip [0 ..] candidateBoxes) $ \(idx, box) ->
+    ColourBox.setOnClickCallback box $ do
+      State.toggleSelected state idx
+      numSelected <- State.numSelected state
+
+      if numSelected >= maxSelectedColours appConfig
+        then do
+          selectedColours <- State.selectedColours state
+          reportUserColours appConfig (UserChose selectedColours)
+          State.resetSelected state
+          newColours <- newCandidateColours appConfig
+          State.setColours state newColours
+          updateCandidateColours candidateBoxes newColours
+        else do
+          isSelected <- State.isSelected state idx
+          ColourBox.setSelected box isSelected
 
   updateCandidateColours candidateBoxes initialColours'
 
