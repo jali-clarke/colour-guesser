@@ -18,7 +18,6 @@ activateGtkApp :: AppConfig -> Gtk.Application -> IO ()
 activateGtkApp appConfig gtkApp = do
   window <- Gtk.applicationWindowNew gtkApp
   Gtk.windowSetTitle window (Just "colour guesser")
-  Gtk.windowSetDefaultSize window 500 800
 
   display <- Gtk.widgetGetDisplay window
 
