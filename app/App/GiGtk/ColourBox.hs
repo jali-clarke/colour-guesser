@@ -2,6 +2,7 @@
 
 module App.GiGtk.ColourBox
   ( ColourBox,
+    asWidget,
     initColourBoxConstructor,
     setColour,
     setSelected,
@@ -21,6 +22,9 @@ data ColourBox
     _boxIdx :: Int,
     _boxCssProvider :: Gtk.CssProvider
   }
+
+asWidget :: ColourBox -> Gtk.Box
+asWidget (ColourBox box _ _ _) = box
 
 initColourBoxConstructor :: Gdk.Display -> IO (Int -> IO ColourBox)
 initColourBoxConstructor display = do
@@ -42,15 +46,16 @@ newColourBox display boxIdx = do
   Gtk.widgetSetSizeRequest box 100 100
   Gtk.widgetAddCssClass box Css.baseBoxClass
   Gtk.widgetSetName box (Css.colouredBoxId boxIdx)
-
-  label <- Gtk.labelNew Nothing
-  Gtk.widgetAddCssClass label Css.boxLabelClass
-
   boxCssProvider <- Gtk.cssProviderNew
   Gtk.styleContextAddProviderForDisplay
     display
     boxCssProvider
     (fromIntegral Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+  label <- Gtk.labelNew Nothing
+  Gtk.widgetAddCssClass label Css.boxLabelClass
+
+  Gtk.boxPrepend box label
 
   pure $ ColourBox box label boxIdx boxCssProvider
 
