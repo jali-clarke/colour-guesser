@@ -48,7 +48,7 @@ setup appConfig window = do
   forM_ (zip [0 ..] candidateBoxes) $ \(idx, box) ->
     on UI.click (ColourBox.element box) $ \_ -> do
       maybeNewColours <- liftIO $ do
-        State.toggleSelected idx state
+        State.toggleSelected state idx
         numSelected <- State.numSelected state
 
         if numSelected >= maxSelectedColours appConfig
@@ -57,13 +57,13 @@ setup appConfig window = do
             reportUserColours appConfig (UserChose selectedColours)
             State.resetSelected state
             newColours <- newCandidateColours appConfig
-            State.setColours newColours state
+            State.setColours state newColours
             pure $ Just newColours
           else pure Nothing
 
       case maybeNewColours of
         Nothing -> do
-          isSelected <- liftIO $ State.isSelected idx state
+          isSelected <- liftIO $ State.isSelected state idx
           box # ColourBox.setSelected isSelected
         Just newColours -> do
           updateCandidateColours candidateBoxes newColours
@@ -75,7 +75,7 @@ setup appConfig window = do
       liftIO $ do
         resetSimulation appConfig
         newInitialColours <- initialColours appConfig
-        State.setColours newInitialColours state
+        State.setColours state newInitialColours
         State.resetSelected state
         pure newInitialColours
 
@@ -89,7 +89,7 @@ setup appConfig window = do
       reportUserColours appConfig (UserDislikes $ Vector.toList rejectedColours)
       State.resetSelected state
       newColours <- newCandidateColours appConfig
-      State.setColours newColours state
+      State.setColours state newColours
       pure newColours
 
     updateCandidateColours candidateBoxes newColours
