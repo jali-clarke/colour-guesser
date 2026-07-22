@@ -19,8 +19,8 @@ executable:
     - containers
     - colour-guesser
     - gi-gdk4
+    - gi-gio
     - gi-gtk4
-    - haskell-gi-base
     - optparse-applicative
     - text
     - threepenny-gui
