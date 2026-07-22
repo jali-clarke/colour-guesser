@@ -2,6 +2,7 @@
 
 module App.GiGtk.ColourBox
   ( ColourBox,
+    ColourBoxSetup,
     setupCommonCss,
     new,
     setColour,
@@ -24,6 +25,8 @@ data ColourBox
     _boxCssProvider :: Gtk.CssProvider
   }
 
+data ColourBoxSetup = ColourBoxSetup
+
 baseBoxClass :: Text.Text
 baseBoxClass = "base-box"
 
@@ -36,7 +39,7 @@ colouredBoxId boxIdx = "coloured-box-" <> Text.pack (show boxIdx)
 boxLabelClass :: Text.Text
 boxLabelClass = "box-label"
 
-setupCommonCss :: Gdk.Display -> IO ()
+setupCommonCss :: Gdk.Display -> IO ColourBoxSetup
 setupCommonCss display = do
   allBoxesProvider <- Gtk.cssProviderNew
   Gtk.cssProviderLoadFromString
@@ -59,8 +62,10 @@ setupCommonCss display = do
     allBoxesProvider
     (fromIntegral Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
-new :: Gdk.Display -> Int -> IO ColourBox
-new display boxIdx = do
+  pure ColourBoxSetup
+
+new :: ColourBoxSetup -> Gdk.Display -> Int -> IO ColourBox
+new _ display boxIdx = do
   box <- Gtk.new Gtk.Box []
   Gtk.widgetSetSizeRequest box 100 100
   Gtk.widgetAddCssClass box baseBoxClass
@@ -77,8 +82,8 @@ new display boxIdx = do
 
   pure $ ColourBox box label boxIdx boxCssProvider
 
-setColour :: Colour -> ColourBox -> IO ()
-setColour colour@(Colour r g b) (ColourBox _ label boxIdx boxCssProvider) = do
+setColour :: ColourBox -> Colour -> IO ()
+setColour (ColourBox _ label boxIdx boxCssProvider) colour@(Colour r g b) = do
   Gtk.cssProviderLoadFromString
     boxCssProvider
     ( Data.Text.Lazy.toStrict . Clay.render $ do
@@ -88,8 +93,8 @@ setColour colour@(Colour r g b) (ColourBox _ label boxIdx boxCssProvider) = do
 
   Gtk.labelSetText label $ Text.pack (show colour)
 
-setSelected :: Bool -> ColourBox -> IO ()
-setSelected isSelected (ColourBox box _ _ _) =
+setSelected :: ColourBox -> Bool -> IO ()
+setSelected (ColourBox box _ _ _) isSelected =
   if isSelected
     then Gtk.widgetAddCssClass box selectedBoxClass
     else Gtk.widgetRemoveCssClass box selectedBoxClass
