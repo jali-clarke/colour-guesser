@@ -6,23 +6,13 @@ module App.GiGtk
   )
 where
 
+import App.AppConfig (AppConfig (..))
 import qualified App.GiGtk.ColourBox as ColourBox
 import qualified App.GiGtk.Css as Css
-import Colour (Colour)
 import Control.Monad (forM_, void)
 import qualified Data.Vector as Vector
 import qualified GI.Gio as Gio
 import qualified GI.Gtk as Gtk
-import UserChoice (UserChoice)
-
-data AppConfig
-  = AppConfig
-  { maxSelectedColours :: Int,
-    initialColours :: IO (Vector.Vector Colour),
-    reportUserColours :: UserChoice -> IO (),
-    newCandidateColours :: IO (Vector.Vector Colour),
-    resetSimulation :: IO ()
-  }
 
 activateGtkApp :: AppConfig -> Gtk.Application -> IO ()
 activateGtkApp appConfig gtkApp = do

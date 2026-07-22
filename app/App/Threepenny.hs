@@ -4,6 +4,7 @@ module App.Threepenny
   )
 where
 
+import App.AppConfig (AppConfig (..))
 import qualified App.State as State
 import qualified App.Threepenny.ColourBox as ColourBox
 import Colour (Colour)
@@ -13,18 +14,8 @@ import qualified Graphics.UI.Threepenny as UI
 import Graphics.UI.Threepenny.Core
 import UserChoice (UserChoice (..))
 
-data AppConfig
-  = AppConfig
-  { listenPort :: Int,
-    maxSelectedColours :: Int,
-    initialColours :: IO (Vector.Vector Colour),
-    reportUserColours :: UserChoice -> IO (),
-    newCandidateColours :: IO (Vector.Vector Colour),
-    resetSimulation :: IO ()
-  }
-
-app :: AppConfig -> IO ()
-app appConfig = startGUI (defaultConfig {jsPort = Just $ listenPort appConfig}) (setup appConfig)
+app :: Maybe Int -> AppConfig -> IO ()
+app maybeListenPort appConfig = startGUI (defaultConfig {jsPort = maybeListenPort}) (setup appConfig)
 
 setup :: AppConfig -> Window -> UI ()
 setup appConfig window = do

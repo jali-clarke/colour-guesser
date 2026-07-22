@@ -6,14 +6,17 @@ module CLI
   )
 where
 
+import App.UIMode (UIMode (..))
 import Colour (Colour)
+import Data.List (stripPrefix)
 import qualified Genetic
 import Genetic.Positive (Positive, abs')
 import Options.Applicative
+import Text.Read (readMaybe)
 
 data Opts
   = Opts
-  { listenPort :: Int,
+  { uiMode :: UIMode,
     maxSelectedColours :: Int,
     numCandidateColoursDisplay :: Int,
     mkGeneticOpts :: (Colour -> IO Positive) -> Genetic.GeneticOpts IO Colour
@@ -24,8 +27,8 @@ getOpts = execParser (info (parser <**> helper) mempty)
 
 parser :: Parser Opts
 parser = do
-  listenPort' <-
-    option auto (showDefault <> value 8080 <> long "port" <> short 'p' <> help "port on which to serve the threepenny-gui")
+  uiMode' <-
+    option uiModeReader (showDefault <> value (Threepenny Nothing) <> long "ui-mode" <> short 'u' <> help "ui mode (valid values: `gtk`, `threepenny[:<port>]`)")
   maxSelectedColours' <-
     option auto (showDefault <> value 3 <> long "max-selected-colours" <> short 'm' <> help "number of colours able to be selected before next generation runs")
   numCandidateColoursDisplay' <-
@@ -35,15 +38,15 @@ parser = do
   numElites' <-
     option auto (showDefault <> value 1 <> long "num-elites" <> short 'e' <> help "number of colours passed through directly to the next generation")
   replicateWeight' <-
-    option positive (showDefault <> value 0 <> long "replicate-weight" <> help "relative weight for replicate genetic operation")
+    option positiveReader (showDefault <> value 0 <> long "replicate-weight" <> help "relative weight for replicate genetic operation")
   crossoverWeight' <-
-    option positive (showDefault <> value 0.5 <> long "crossover-weight" <> help "relative weight for crossover genetic operation")
+    option positiveReader (showDefault <> value 0.5 <> long "crossover-weight" <> help "relative weight for crossover genetic operation")
   mutateWeight' <-
-    option positive (showDefault <> value 0.5 <> long "mutate-weight" <> help "relative weight for mutate genetic operation")
+    option positiveReader (showDefault <> value 0.5 <> long "mutate-weight" <> help "relative weight for mutate genetic operation")
 
   pure $
     Opts
-      { listenPort = listenPort',
+      { uiMode = uiMode',
         maxSelectedColours = maxSelectedColours',
         numCandidateColoursDisplay = numCandidateColoursDisplay',
         mkGeneticOpts = \fitness' ->
@@ -57,5 +60,19 @@ parser = do
             }
       }
 
-positive :: ReadM Positive
-positive = abs' <$> auto
+positiveReader :: ReadM Positive
+positiveReader = abs' <$> auto
+
+uiModeReader :: ReadM UIMode
+uiModeReader =
+  eitherReader $ \uiModeStr ->
+    case uiModeStr of
+      "gtk" -> Right Gtk
+      "threepenny" -> Right (Threepenny Nothing)
+      _ ->
+        case stripPrefix "threepenny:" uiModeStr of
+          Nothing -> Left $ "unknown gui mode: " <> uiModeStr
+          Just portStr -> 
+            case readMaybe portStr of
+              Nothing -> Left $ "invalid threepenny port: " <> portStr
+              Just port -> Right (Threepenny (Just port))

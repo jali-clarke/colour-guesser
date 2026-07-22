@@ -1,6 +1,6 @@
 # colour-guesser
 
-a little toy program that uses a [genetic algorithm](https://github.com/jali-clarke/genetic) to narrow down a colour space depending on the colours you choose.  uses threepenny-gui for the gui.  pass `--help` to the executable to see all runtime opts and tweakables
+a little toy program that uses a [genetic algorithm](https://github.com/jali-clarke/genetic) to narrow down a colour space depending on the colours you choose.  uses `threepenny-gui` or `gi-gtk4` for the gui depending on cli args.  pass `--help` to the executable to see all runtime opts and tweakables
 
 ## how to run
 

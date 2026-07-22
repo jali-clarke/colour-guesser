@@ -1,6 +1,7 @@
 module Main where
 
-import qualified App.Threepenny as App
+import App (runApp)
+import App.AppConfig (AppConfig (..))
 import qualified CLI
 import Colour (Colour (..))
 import qualified Control.Concurrent.MVar as MVar
@@ -29,17 +30,18 @@ main = do
 
   manager <- SimulationManager.startSimulation geneticOpts (simulateCallback numCandidateColoursDisplay candidateColoursMVar)
 
-  App.app $
-    App.AppConfig
-      { App.listenPort = CLI.listenPort opts,
-        App.maxSelectedColours = CLI.maxSelectedColours opts,
-        App.initialColours = do
-          initialPopulation' <- SimulationManager.initialPopulation manager
-          pure (Vector.take numCandidateColoursDisplay initialPopulation'),
-        App.reportUserColours = MVarN.putMVarN userChoiceMVar (Genetic.populationSize geneticOpts),
-        App.newCandidateColours = MVar.takeMVar candidateColoursMVar,
-        App.resetSimulation = SimulationManager.restartSimulation manager
-      }
+  let appConfig =
+        AppConfig
+          { maxSelectedColours = CLI.maxSelectedColours opts,
+            initialColours = do
+              initialPopulation' <- SimulationManager.initialPopulation manager
+              pure (Vector.take numCandidateColoursDisplay initialPopulation'),
+            reportUserColours = MVarN.putMVarN userChoiceMVar (Genetic.populationSize geneticOpts),
+            newCandidateColours = MVar.takeMVar candidateColoursMVar,
+            resetSimulation = SimulationManager.restartSimulation manager
+          }
+  
+  runApp (CLI.uiMode opts) appConfig
 
 diffColourSq :: Colour -> Colour -> Positive
 diffColourSq (Colour r0 b0 g0) (Colour r1 b1 g1) =
