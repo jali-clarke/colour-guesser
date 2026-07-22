@@ -7,17 +7,12 @@ module App.GiGtk.ColourBox.Css
     boxLabelClass,
     commonCss,
     boxColourCss,
-    toText,
   )
 where
 
 import Clay hiding (b)
 import Colour (Colour (..))
 import Data.Text (Text, pack)
-import Data.Text.Lazy (toStrict)
-
-toText :: Css -> Text
-toText = toStrict . render
 
 baseBoxClass :: Text
 baseBoxClass = "base-box"
