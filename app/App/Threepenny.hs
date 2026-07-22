@@ -1,6 +1,5 @@
 module App.Threepenny
   ( AppConfig (..),
-    UserChoice (..),
     app,
   )
 where
@@ -12,6 +11,7 @@ import Control.Monad (forM_, replicateM, void)
 import qualified Data.Vector as Vector
 import qualified Graphics.UI.Threepenny as UI
 import Graphics.UI.Threepenny.Core
+import UserChoice (UserChoice (..))
 
 data AppConfig
   = AppConfig
@@ -22,10 +22,6 @@ data AppConfig
     newCandidateColours :: IO (Vector.Vector Colour),
     resetSimulation :: IO ()
   }
-
-data UserChoice
-  = UserChose [Colour]
-  | UserDislikes [Colour]
 
 app :: AppConfig -> IO ()
 app appConfig = startGUI (defaultConfig {jsPort = Just $ listenPort appConfig}) (setup appConfig)

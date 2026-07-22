@@ -4,7 +4,6 @@
 
 module App.GiGtk
   ( AppConfig (..),
-    UserChoice (..),
     app,
   )
 where
@@ -14,6 +13,7 @@ import Control.Monad (void)
 import Data.GI.Base
 import qualified Data.Vector as Vector
 import qualified GI.Gtk as Gtk
+import UserChoice (UserChoice)
 
 data AppConfig
   = AppConfig
@@ -23,10 +23,6 @@ data AppConfig
     newCandidateColours :: IO (Vector.Vector Colour),
     resetSimulation :: IO ()
   }
-
-data UserChoice
-  = UserChose [Colour]
-  | UserDislikes [Colour]
 
 app :: AppConfig -> IO ()
 app _ = do

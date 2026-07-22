@@ -9,6 +9,7 @@ import qualified Genetic
 import Genetic.Positive (Positive, abs', square)
 import qualified MVarN
 import qualified SimulationManager
+import UserChoice (UserChoice (..))
 
 main :: IO ()
 main = do
@@ -21,8 +22,8 @@ main = do
         CLI.mkGeneticOpts opts $ \candidate -> do
           userChoice <- MVarN.takeMVarN userChoiceMVar 1
           case userChoice of
-            App.UserChose selectedColours -> pure $ 1 / ((sum $ fmap (diffColourSq candidate) selectedColours) + 0.1)
-            App.UserDislikes dislikedColours -> pure $ sum (fmap (diffColourSq candidate) dislikedColours)
+            UserChose selectedColours -> pure $ 1 / ((sum $ fmap (diffColourSq candidate) selectedColours) + 0.1)
+            UserDislikes dislikedColours -> pure $ sum (fmap (diffColourSq candidate) dislikedColours)
 
   let numCandidateColoursDisplay = CLI.numCandidateColoursDisplay opts
 
