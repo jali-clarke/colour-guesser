@@ -37,7 +37,7 @@ activateGtkApp appConfig gtkApp = do
   mkColourBox <- ColourBox.initColourBoxConstructor display
 
   initialColours' <- initialColours appConfig
-  forM_ [0 .. Vector.length initialColours'] $ \boxIdx -> do
+  forM_ [0 .. Vector.length initialColours' - 1] $ \boxIdx -> do
     colourBox <- mkColourBox boxIdx
     let (colIdx, rowIdx) = fromIntegral boxIdx `divMod` 4
     Gtk.gridAttach grid (ColourBox.asWidget colourBox) colIdx rowIdx 1 1
