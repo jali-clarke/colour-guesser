@@ -33,6 +33,7 @@ activateGtkApp appConfig gtkApp = do
     (Css.toText Css.backgroundCss)
 
   grid <- Gtk.gridNew
+  Gtk.windowSetChild window (Just grid)
 
   mkColourBox <- ColourBox.initColourBoxConstructor display
 
