@@ -40,7 +40,7 @@ main = do
             newCandidateColours = MVar.takeMVar candidateColoursMVar,
             resetSimulation = SimulationManager.restartSimulation manager
           }
-  
+
   runApp (CLI.uiMode opts) appConfig
 
 diffColourSq :: Colour -> Colour -> Positive

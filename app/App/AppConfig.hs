@@ -1,6 +1,7 @@
-module App.AppConfig (
-  AppConfig (..)
-) where
+module App.AppConfig
+  ( AppConfig (..),
+  )
+where
 
 import Colour (Colour)
 import qualified Data.Vector as Vector

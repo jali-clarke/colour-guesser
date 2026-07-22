@@ -6,13 +6,11 @@ module CLI
   )
 where
 
-import App.UIMode (UIMode (..))
+import App.UIMode (UIMode (..), uiModeReader)
 import Colour (Colour)
-import Data.List (stripPrefix)
 import qualified Genetic
 import Genetic.Positive (Positive, abs')
 import Options.Applicative
-import Text.Read (readMaybe)
 
 data Opts
   = Opts
@@ -62,17 +60,3 @@ parser = do
 
 positiveReader :: ReadM Positive
 positiveReader = abs' <$> auto
-
-uiModeReader :: ReadM UIMode
-uiModeReader =
-  eitherReader $ \uiModeStr ->
-    case uiModeStr of
-      "gtk" -> Right Gtk
-      "threepenny" -> Right (Threepenny Nothing)
-      _ ->
-        case stripPrefix "threepenny:" uiModeStr of
-          Nothing -> Left $ "unknown gui mode: " <> uiModeStr
-          Just portStr -> 
-            case readMaybe portStr of
-              Nothing -> Left $ "invalid threepenny port: " <> portStr
-              Just port -> Right (Threepenny (Just port))
