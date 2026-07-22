@@ -6,9 +6,10 @@ module App.GiGtk
   )
 where
 
+import qualified App.GiGtk.ColourBox as ColourBox
 import qualified App.GiGtk.Css as Css
 import Colour (Colour)
-import Control.Monad (void)
+import Control.Monad (forM_, void)
 import qualified Data.Vector as Vector
 import qualified GI.Gio as Gio
 import qualified GI.Gtk as Gtk
@@ -24,7 +25,7 @@ data AppConfig
   }
 
 activateGtkApp :: AppConfig -> Gtk.Application -> IO ()
-activateGtkApp _ gtkApp = do
+activateGtkApp appConfig gtkApp = do
   window <- Gtk.applicationWindowNew gtkApp
   Gtk.windowSetTitle window (Just "colour guesser")
   Gtk.windowSetDefaultSize window 500 800
@@ -40,6 +41,17 @@ activateGtkApp _ gtkApp = do
   Gtk.cssProviderLoadFromString
     cssProvider
     (Css.toText Css.backgroundCss)
+
+  grid <- Gtk.gridNew
+
+  mkColourBox <- ColourBox.initColourBoxConstructor display
+
+  initialColours' <- initialColours appConfig
+  forM_ [0 .. Vector.length initialColours'] $ \boxIdx -> do
+    colourBox <- mkColourBox boxIdx
+    let (colIdx, rowIdx) = fromIntegral boxIdx `divMod` 4
+    Gtk.gridAttach grid (ColourBox.asWidget colourBox) colIdx rowIdx 1 1
+    ColourBox.setColour colourBox (initialColours' Vector.! boxIdx)
 
   Gtk.windowPresent window
 
