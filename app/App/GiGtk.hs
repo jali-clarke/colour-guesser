@@ -24,6 +24,9 @@ activateGtkApp appConfig gtkApp = do
 
   display <- Gtk.widgetGetDisplay window
 
+  displaySettings <- Gtk.settingsGetForDisplay display
+  Gtk.setSettingsGtkApplicationPreferDarkTheme displaySettings True
+
   cssProvider <- Gtk.cssProviderNew
   Gtk.styleContextAddProviderForDisplay
     display
