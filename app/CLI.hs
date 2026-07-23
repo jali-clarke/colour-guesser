@@ -26,7 +26,7 @@ getOpts = execParser (info (parser <**> helper) mempty)
 parser :: Parser Opts
 parser = do
   uiMode' <-
-    option uiModeReader (showDefault <> value (Threepenny Nothing) <> long "ui-mode" <> short 'u' <> help "ui mode (valid values: `gtk`, `threepenny[:<port>]`)")
+    option uiModeReader (showDefault <> value Gtk <> long "ui-mode" <> short 'u' <> help "ui mode (valid values: `gtk`, `threepenny[:<port>]`)")
   maxSelectedColours' <-
     option auto (showDefault <> value 3 <> long "max-selected-colours" <> short 'm' <> help "number of colours able to be selected before next generation runs")
   numCandidateColoursDisplay' <-
